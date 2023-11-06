@@ -27,7 +27,7 @@ func NewPostgres(timeout int) error {
 	)
 
 	for {
-		time.Sleep(2)
+		time.Sleep(time.Second * 2)
 		attempts++
 		cfg, err := pgxpool.ParseConfig(dsn)
 		if err != nil {
@@ -56,23 +56,54 @@ func NewPostgres(timeout int) error {
 		}
 
 		err = pool.Ping(context.Background())
-		if err == nil {
+		if err != nil {
 			if attempts > maxConnectionAttempts {
 				message = "error while accessing pg"
 				break
 			}
-
-			PgConn = &Postgres{
-				pool:    pool,
-				Timeout: timeout,
-			}
-			return nil
+			continue
 		}
+
+		PgConn = &Postgres{
+			pool:    pool,
+			Timeout: timeout,
+		}
+		return nil
 	}
 
 	return model.ErrPostgresCreateFailed{Message: message}
 }
 
+func (pg *Postgres) CreateJoinTables() error {
+	_, err := pg.pool.Exec(context.Background(), `
+		create table if not exists `+model.UsersTableName+"_"+model.GroupsTableName+`(
+			userId int,
+			groupId int,
+			foreign key (userId) references users(id),
+			foreign key (groupId) references groups(id)
+		);
+
+		create table if not exists `+model.CamerasTableName+"_"+model.GroupsTableName+`(
+			cameraId int,
+			groupId int,
+			foreign key (cameraId) references cameras(id),
+			foreign key (groupId) references groups(id)
+		);
+
+		create table if not exists `+model.VideosTableName+"_"+model.GroupsTableName+`(
+			videoId int,
+			groupId int,
+			foreign key (videoId) references videos(id),
+			foreign key (groupId) references groups(id)
+		);
+	`)
+	return err
+}
+
 func (pg *Postgres) GetPool() *pgxpool.Pool {
 	return pg.pool
+}
+
+func (pg *Postgres) Close() {
+	pg.pool.Close()
 }
