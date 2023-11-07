@@ -1,6 +1,8 @@
 FROM golang:1.21.0-bookworm
 WORKDIR /app
 
+RUN mkdir -p /app/static
+
 COPY go.mod ./
 COPY go.sum ./
 

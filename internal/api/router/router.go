@@ -39,6 +39,9 @@ func (r *Router) setup() error {
 	r.engine.Use(recover.New(recover.ConfigDefault))
 	r.engine.Get("/swagger/*", swagger.HandlerDefault)
 
+	r.engine.Static("/static", "./static")
+	r.engine.Use("/static", middleware.AccessTokenMiddleware(config.Cfg.JwtSecret))
+
 	auth := r.engine.Group("/auth")
 	if err := r.setupAuthRoutes(auth); err != nil {
 		return err
