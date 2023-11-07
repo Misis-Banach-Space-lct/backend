@@ -100,10 +100,20 @@ func (ur *userPgRepository) InsertOne(c context.Context, userData model.UserCrea
 
 	_, err = tx.Exec(c, `
 		insert into `+model.UsersTableName+"_"+model.GroupsTableName+`
-		values ($1, $2)
-	`, userId, userData.GroupId)
+		values ($1, 0)
+	`, userId)
 	if err != nil {
 		return err
+	}
+
+	if userData.GroupId != 0 {
+		_, err = tx.Exec(c, `
+			insert into `+model.UsersTableName+"_"+model.GroupsTableName+`
+			values ($1, $2)
+		`, userId, userData.GroupId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit(c)

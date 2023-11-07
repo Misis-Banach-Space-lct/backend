@@ -53,10 +53,20 @@ func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoC
 
 	_, err = tx.Exec(c, `
 		insert into `+model.VideosTableName+"_"+model.GroupsTableName+`
-		values($1, $2)
-	`, videoId, videoData.GroupId)
+		values($1, 0)
+	`, videoId)
 	if err != nil {
 		return err
+	}
+
+	if videoData.GroupId != 0 {
+		_, err = tx.Exec(c, `
+			insert into `+model.VideosTableName+"_"+model.GroupsTableName+`
+			values($1, $2)
+		`, videoId, videoData.GroupId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit(c)
@@ -88,10 +98,20 @@ func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.Vid
 
 		_, err = innerTx.Exec(c, `
 			insert into `+model.VideosTableName+"_"+model.GroupsTableName+`
-			values($1, $2)
-		`, videoId, video.GroupId)
+			values($1, 0)
+		`, videoId)
 		if err != nil {
 			return err
+		}
+
+		if video.GroupId != 0 {
+			_, err = innerTx.Exec(c, `
+				insert into `+model.VideosTableName+"_"+model.GroupsTableName+`
+				values($1, $2)
+			`, videoId, video.GroupId)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = innerTx.Commit(c)
