@@ -18,8 +18,8 @@ func NewVideoPgRepository(db *pgxpool.Pool) (model.VideoRepository, error) {
 		create table if not exists `+model.VideosTableName+`(
 			id serial primary key,
 			title text not null unique,
-			source text not null unique,
-			processedSource text default '',
+			source text not null,
+			processedSource text not null default '',
 			status text default 'processing',
 			createdAt timestamp default current_timestamp,
 			updatedAt timestamp default current_timestamp
