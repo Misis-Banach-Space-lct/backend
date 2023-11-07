@@ -14,7 +14,7 @@ var (
 type Video struct {
 	Id              int       `json:"id"`    // serial
 	Title           string    `json:"title"` // unique
-	Source          string    `json:"-"`
+	Source          string    `json:"source"`
 	ProcessedSource string    `json:"-"`
 	Status          string    `json:"status"`    // default = "processing"
 	CreatedAt       time.Time `json:"createdAt"` // default = current timestamp

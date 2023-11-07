@@ -49,7 +49,7 @@ func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr mo
 //	@Param			video			formData	file	true	"Видео файл"
 //	@Param			title			formData	string	false	"Название видео"
 //	@Param			groupId			formData	int		false	"ID группы, к которой принадлежит видео, 0 - для всех"
-//	@Success		201				{object}	object	"Видео успешно создано"
+//	@Success		201				{object}	model.VideoCreate	"Видео успешно создано"
 //	@Failure		400				{object}	string	"Ошибка при создании видео"
 //	@Failure		403				{object}	string	"Доступ запрещен"
 //	@Failure		422				{object}	string	"Неверный формат данных"
