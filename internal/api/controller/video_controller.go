@@ -45,14 +45,14 @@ func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr mo
 //	@Tags			videos
 //	@Accept			multipart/form-data
 //	@Produce		json
-//	@Param			Authorization	header		string	true	"Authentication header"
-//	@Param			video			formData	file	true	"Видео файл"
-//	@Param			title			formData	string	false	"Название видео"
-//	@Param			groupId			formData	int		false	"ID группы, к которой принадлежит видео, 0 - для всех"
+//	@Param			Authorization	header		string				true	"Authentication header"
+//	@Param			video			formData	file				true	"Видео файл"
+//	@Param			title			formData	string				false	"Название видео"
+//	@Param			groupId			formData	int					false	"ID группы, к которой принадлежит видео, 0 - для всех"
 //	@Success		201				{object}	model.VideoCreate	"Видео успешно создано"
-//	@Failure		400				{object}	string	"Ошибка при создании видео"
-//	@Failure		403				{object}	string	"Доступ запрещен"
-//	@Failure		422				{object}	string	"Неверный формат данных"
+//	@Failure		400				{object}	string				"Ошибка при создании видео"
+//	@Failure		403				{object}	string				"Доступ запрещен"
+//	@Failure		422				{object}	string				"Неверный формат данных"
 //	@Router			/api/v1/videos [post]
 func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 	video, err := c.FormFile("video")

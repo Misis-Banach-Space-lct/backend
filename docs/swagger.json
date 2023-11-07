@@ -563,7 +563,7 @@
                     "201": {
                         "description": "Видео успешно создано",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/model.VideoCreate"
                         }
                     },
                     "400": {
@@ -956,6 +956,9 @@
                     "description": "serial",
                     "type": "integer"
                 },
+                "source": {
+                    "type": "string"
+                },
                 "status": {
                     "description": "default = \"processing\"",
                     "type": "string"
@@ -966,6 +969,20 @@
                 },
                 "updatedAt": {
                     "description": "default = current timestamp",
+                    "type": "string"
+                }
+            }
+        },
+        "model.VideoCreate": {
+            "type": "object",
+            "properties": {
+                "groupId": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

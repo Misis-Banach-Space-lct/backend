@@ -12,7 +12,7 @@ import (
 // TODO: add graceful shutdown
 //
 //	@title			ЛЦТ-2023 видео-детекция незаконной торговли API
-//	@version		0.1
+//	@version		0.0.1
 //	@description	API документация к решению команды MISIS Banach Space для детекции точек незаконной торгволи
 //	@BasePath		/
 func main() {

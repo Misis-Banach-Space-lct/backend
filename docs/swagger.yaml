@@ -94,6 +94,8 @@ definitions:
       id:
         description: serial
         type: integer
+      source:
+        type: string
       status:
         description: default = "processing"
         type: string
@@ -102,6 +104,15 @@ definitions:
         type: string
       updatedAt:
         description: default = current timestamp
+        type: string
+    type: object
+  model.VideoCreate:
+    properties:
+      groupId:
+        type: integer
+      source:
+        type: string
+      title:
         type: string
     type: object
   model.VideoUpdateGroup:
@@ -507,7 +518,7 @@ paths:
         "201":
           description: Видео успешно создано
           schema:
-            type: object
+            $ref: '#/definitions/model.VideoCreate'
         "400":
           description: Ошибка при создании видео
           schema:

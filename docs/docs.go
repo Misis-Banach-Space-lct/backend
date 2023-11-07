@@ -570,7 +570,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Видео успешно создано",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/model.VideoCreate"
                         }
                     },
                     "400": {
@@ -963,6 +963,9 @@ const docTemplate = `{
                     "description": "serial",
                     "type": "integer"
                 },
+                "source": {
+                    "type": "string"
+                },
                 "status": {
                     "description": "default = \"processing\"",
                     "type": "string"
@@ -973,6 +976,20 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "description": "default = current timestamp",
+                    "type": "string"
+                }
+            }
+        },
+        "model.VideoCreate": {
+            "type": "object",
+            "properties": {
+                "groupId": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }
