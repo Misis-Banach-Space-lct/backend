@@ -23,9 +23,9 @@ type Video struct {
 
 // used in controller only, user doesnt send it
 type VideoCreate struct {
-	Title   string
-	Source  string
-	GroupId int
+	Title   string `json:"title"`
+	Source  string `json:"source"`
+	GroupId int    `json:"groupId"`
 }
 
 type VideoUpdateGroup struct {

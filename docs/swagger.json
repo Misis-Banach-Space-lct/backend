@@ -4,7 +4,7 @@
         "description": "API документация к решению команды MISIS Banach Space для детекции точек незаконной торгволи",
         "title": "ЛЦТ-2023 видео-детекция незаконной торговли API",
         "contact": {},
-        "version": "0.1"
+        "version": "0.0.1"
     },
     "basePath": "/",
     "paths": {
