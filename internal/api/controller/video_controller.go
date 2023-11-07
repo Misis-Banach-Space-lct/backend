@@ -6,9 +6,13 @@ import (
 	"lct/internal/logging"
 	"lct/internal/model"
 	"lct/internal/response"
+	"math/rand"
 	"net/http"
+	"os/exec"
+	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"archive/zip"
 	"io"
@@ -16,7 +20,9 @@ import (
 	"path/filepath"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gocelery/gocelery"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 )
 
@@ -75,6 +81,66 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCreateRecordsFailed(vc.modelName, err)
 	}
 
+	if err := c.SaveFile(video, videoData.Source); err != nil {
+		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save video file", err)
+	}
+
+	go func() {
+		go func() {
+			cmd := exec.Command("python3", "-m", "celery", "-A", "tools.worker", "worker")
+			logging.Log.Debugf("command: %v", cmd.String())
+			if err := cmd.Run(); err != nil {
+				logging.Log.Errorf("failed to run celery worker: %v", err)
+				return
+			}
+		}()
+
+		// create redis connection pool
+		redisPool := &redis.Pool{
+			MaxIdle:     3,                 // maximum number of idle connections in the pool
+			MaxActive:   0,                 // maximum number of connections alloca\ted by the pool at a given time
+			IdleTimeout: 240 * time.Second, // close connections after remaining idle for this duration
+			Dial: func() (redis.Conn, error) {
+				c, err := redis.DialURL("redis://redis:6379/0")
+				if err != nil {
+					return nil, err
+				}
+				return c, err
+			},
+			TestOnBorrow: func(c redis.Conn, t time.Time) error {
+				_, err := c.Do("PING")
+				return err
+			},
+		}
+		defer redisPool.Close()
+
+		// initialize celery client
+		cli, _ := gocelery.NewCeleryClient(
+			gocelery.NewRedisBroker(redisPool),
+			&gocelery.RedisCeleryBackend{Pool: redisPool},
+			1,
+		)
+
+		// prepare arguments
+		taskName := "tools.worker.add"
+		argA := rand.Intn(10)
+		argB := rand.Intn(10)
+
+		// run task
+		asyncResult, err := cli.Delay(taskName, argA, argB)
+		if err != nil {
+			panic(err)
+		}
+
+		// get results from backend with timeout
+		res, err := asyncResult.Get(10 * time.Second)
+		if err != nil {
+			panic(err)
+		}
+
+		logging.Log.Debugf("result: %+v of type %+v", res, reflect.TypeOf(res))
+	}()
+
 	return c.Status(http.StatusCreated).JSON(videoData)
 }
 
@@ -106,11 +172,16 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 		return response.ErrValidationError("archive file", err)
 	}
 
+	if err := c.SaveFile(archive, archive.Filename); err != nil {
+		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save archive file", err)
+	}
+
 	zipReader, err := zip.OpenReader(archive.Filename)
 	if err != nil {
 		return response.ErrCustomResponse(http.StatusInternalServerError, "can't unzip archive", err)
 	}
 	defer zipReader.Close()
+	defer os.Remove(archive.Filename)
 
 	var videosData []model.VideoCreate
 	for idx, file := range zipReader.File {
@@ -124,10 +195,11 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 		}
 		defer fileReader.Close()
 
-		t := fmt.Sprintf("%s-%d-%s", title, idx, file.Name)
+		fileName := strings.ReplaceAll(file.Name, " ", "_")
+		t := fmt.Sprintf("%s-%d-%s", title, idx, fileName)
 		videosData = append(videosData, model.VideoCreate{
 			Title:   t,
-			Source:  "static/videos/" + strings.ReplaceAll(file.Name, " ", "_"),
+			Source:  "static/videos/" + fileName,
 			GroupId: groupId,
 		})
 

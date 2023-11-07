@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"lct/internal/model"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -126,14 +127,11 @@ func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.Vid
 func (vr *videoPgRepository) FindOne(c context.Context, filter string, value any, userGroupIds []int) (model.Video, error) {
 	var video model.Video
 
-	sql := `select * from ` + model.VideosTableName
-	if filter == "status" {
-		sql += ` where ` + filter + ` = '` + value.(string) + `'`
-	} else if filter == "groupId" {
-		sql += ` where id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = ` + value.(string) + `)`
+	sql := `select * from ` + model.VideosTableName + ` where `
+	if filter != "" {
+		sql += fmt.Sprintf("%s = '%v' and ", filter, value)
 	}
-
-	sql += ` and id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))`
+	sql += `id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))`
 
 	err := vr.db.QueryRow(c, sql, userGroupIds).Scan(&video.Id, &video.Title, &video.Source, &video.ProcessedSource, &video.Status, &video.CreatedAt, &video.UpdatedAt)
 	if err != nil {
@@ -146,20 +144,14 @@ func (vr *videoPgRepository) FindOne(c context.Context, filter string, value any
 func (vr *videoPgRepository) FindMany(c context.Context, filter string, value any, offset, limit int, userGroupIds []int) ([]model.Video, error) {
 	var videos []model.Video
 
-	sql := `select * from ` + model.VideosTableName
-	if filter == "" {
-		sql += ` where id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))`
-	} else {
-		if filter == "status" {
-			sql += ` where ` + filter + ` = '` + value.(string) + `'`
-		} else if filter == "groupId" {
-			sql += ` where id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = ` + value.(string) + `)`
-		}
-		sql += ` 
-			and id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))
-		`
+	sql := `select * from ` + model.VideosTableName + ` where `
+	if filter != "" {
+		sql += fmt.Sprintf("%s = '%v' and ", filter, value)
 	}
-	sql += `order by id desc offset $2 limit $3`
+	sql += `
+		id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))
+		order by id desc offset $2 limit $3
+	`
 
 	rows, err := vr.db.Query(c, sql, userGroupIds, offset, limit)
 	if err != nil {

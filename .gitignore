@@ -4,3 +4,5 @@ data
 *.sql
 .vscode
 *.log
+__pycache__
+static
