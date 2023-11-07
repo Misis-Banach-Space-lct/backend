@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-var GroupsTableName = "groups"
+var (
+	GroupActionAdd    = "add"
+	GroupActionRemove = "remove"
+	GroupsTableName   = "groups"
+)
 
 type Group struct {
 	Id        int       `json:"id"`        // serial, id 0 is for default group
@@ -20,7 +24,8 @@ type GroupCreate struct {
 
 type GroupRepository interface {
 	InsertOne(c context.Context, groupData GroupCreate) error
-	FindOne(c context.Context, title string) (Group, error)
-	UpdateOne(c context.Context, groupData Group) error
+	// FindOne(c context.Context, title string) (Group, error)
+	FindMany(c context.Context, offset, limit int) ([]Group, error)
+	// UpdateOne(c context.Context, groupData Group) error
 	DeleteOne(c context.Context, groupId int) error
 }

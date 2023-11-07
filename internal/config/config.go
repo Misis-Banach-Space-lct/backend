@@ -10,6 +10,7 @@ import (
 type Config struct {
 	LoggingLevel string
 	ServerPort   string
+	JwtSecret    string
 
 	PostgresUser     string
 	PostgresPassword string
@@ -27,6 +28,7 @@ func NewConfig() error {
 	Cfg = &Config{
 		LoggingLevel:     ParseEnvString("LOGGING_LEVEL"),
 		ServerPort:       ParseEnvString("SERVER_PORT"),
+		JwtSecret:        ParseEnvString("JWT_SECRET"),
 		PostgresUser:     ParseEnvString("POSTGRES_USER"),
 		PostgresPassword: ParseEnvString("POSTGRES_PASSWORD"),
 		PostgresHost:     ParseEnvString("POSTGRES_HOST"),
